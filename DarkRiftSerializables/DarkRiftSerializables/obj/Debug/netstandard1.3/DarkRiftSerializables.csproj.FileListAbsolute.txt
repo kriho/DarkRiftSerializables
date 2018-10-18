@@ -1,0 +1,13 @@
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\bin\Debug\netstandard1.3\tools\install.ps1
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\bin\Debug\netstandard1.3\tools\uninstall.ps1
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\bin\Debug\netstandard1.3\DarkRiftSerializables.deps.json
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\bin\Debug\netstandard1.3\DarkRiftSerializables.dll
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\bin\Debug\netstandard1.3\DarkRiftSerializables.pdb
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\obj\Debug\netstandard1.3\DarkRiftSerializables.csprojAssemblyReference.cache
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\obj\Debug\netstandard1.3\DarkRiftSerializables.Resources.resources
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\obj\Debug\netstandard1.3\DarkRiftSerializables.csproj.GenerateResource.cache
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\obj\Debug\netstandard1.3\DarkRiftSerializables.csproj.CoreCompileInputs.cache
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\obj\Debug\netstandard1.3\DarkRiftSerializables.AssemblyInfoInputs.cache
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\obj\Debug\netstandard1.3\DarkRiftSerializables.AssemblyInfo.cs
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\obj\Debug\netstandard1.3\DarkRiftSerializables.dll
+D:\DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables\obj\Debug\netstandard1.3\DarkRiftSerializables.pdb

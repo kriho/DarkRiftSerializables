@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2046
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DarkRiftSerializables", "DarkRiftSerializables\DarkRiftSerializables\DarkRiftSerializables.csproj", "{77A50FC5-410C-4B9A-83B8-B3C148C56660}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DarkRiftSerializables.Test", "DarkRiftSerializables\DarkRiftSerializables.Test\DarkRiftSerializables.Test.csproj", "{429FCD65-E310-4BED-B9F3-FDDAB1FC2BAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DarkRiftSerializables.Vsix", "DarkRiftSerializables\DarkRiftSerializables.Vsix\DarkRiftSerializables.Vsix.csproj", "{F5260C7D-787E-461C-9C67-43591BB65414}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{77A50FC5-410C-4B9A-83B8-B3C148C56660}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77A50FC5-410C-4B9A-83B8-B3C148C56660}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77A50FC5-410C-4B9A-83B8-B3C148C56660}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77A50FC5-410C-4B9A-83B8-B3C148C56660}.Release|Any CPU.Build.0 = Release|Any CPU
+		{429FCD65-E310-4BED-B9F3-FDDAB1FC2BAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{429FCD65-E310-4BED-B9F3-FDDAB1FC2BAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{429FCD65-E310-4BED-B9F3-FDDAB1FC2BAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{429FCD65-E310-4BED-B9F3-FDDAB1FC2BAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5260C7D-787E-461C-9C67-43591BB65414}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5260C7D-787E-461C-9C67-43591BB65414}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5260C7D-787E-461C-9C67-43591BB65414}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5260C7D-787E-461C-9C67-43591BB65414}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1EA4E87F-8EDA-4D29-B008-C94FD3A5704F}
+	EndGlobalSection
+EndGlobal
