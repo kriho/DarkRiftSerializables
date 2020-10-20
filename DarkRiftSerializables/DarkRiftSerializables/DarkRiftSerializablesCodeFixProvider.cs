@@ -41,7 +41,7 @@ namespace DarkRiftSerializables {
                 diagnostic);
         }
 
-        public MethodDeclarationSyntax GetMethodDeclarationSyntax(string returnTypeName, string methodName, string[] parameterTypes, string[] paramterNames) {
+        public MethodDeclarationSyntax GetMethodDeclarationSyntax(string returnTypeName, string methodName, string[] parameterTypes, string[] paramterNames, bool hasOverride) {
             var parameterList = SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList(GetParametersList(parameterTypes, paramterNames)));
             return SyntaxFactory.MethodDeclaration(attributeLists: SyntaxFactory.List<AttributeListSyntax>(),
                           modifiers: SyntaxFactory.TokenList(),
@@ -53,13 +53,15 @@ namespace DarkRiftSerializables {
                           constraintClauses: SyntaxFactory.List<TypeParameterConstraintClauseSyntax>(),
                           body: SyntaxFactory.Block(
                           ),
-                          semicolonToken: SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+                          semicolonToken: SyntaxFactory.Token(SyntaxKind.None))
                   // Annotate that this node should be formatted
                   .WithAdditionalAnnotations(Formatter.Annotation)
                   .WithModifiers(
+                      hasOverride ? 
                     SyntaxFactory.TokenList(
-                      SyntaxFactory.Token(SyntaxKind.PublicKeyword)
-                    )
+                      SyntaxFactory.Token(SyntaxKind.PublicKeyword),
+                      SyntaxFactory.Token(SyntaxKind.OverrideKeyword)
+                    ) : SyntaxFactory.TokenList(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                   );
         }
 
@@ -219,31 +221,35 @@ namespace DarkRiftSerializables {
 
         private async Task<Document> AutogenerateMethodsAsync(Document document, ClassDeclarationSyntax serializableClass, CancellationToken cancellationToken) {
             var root = await document.GetSyntaxRootAsync().ConfigureAwait(false);
+            var semanticModel = await document.GetSemanticModelAsync();
             ClassDeclarationSyntax newClass = null;
             if (!serializableClass.Members.Where(m => m is MethodDeclarationSyntax).Any(m => ((MethodDeclarationSyntax)m).Identifier.Text == "Serialize")) {
                 var serializeMethod = GetMethodDeclarationSyntax(returnTypeName: "void",
                                                                 methodName: "Serialize",
                                                                 parameterTypes: new[] { "SerializeEvent" },
-                                                                paramterNames: new[] { "e" });
-                foreach (var member in serializableClass.Members.Where(m => m is PropertyDeclarationSyntax).Select(m => (PropertyDeclarationSyntax)m)) {
+                                                                paramterNames: new[] { "e" },
+                                                                hasOverride: semanticModel.GetDeclaredSymbol(serializableClass).BaseType?.GetMembers().Any(
+                                                                    m => m.Kind == SymbolKind.Method && m.Name == "Serialize") ?? false);
+                foreach (var member in serializableClass.Members.Where(m => m is PropertyDeclarationSyntax prop && (prop.AccessorList?.Accessors.Any(x => x.IsKind(SyntaxKind.GetAccessorDeclaration)) ?? false) && (prop.AccessorList?.Accessors.Any(x => x.IsKind(SyntaxKind.SetAccessorDeclaration)) ?? false)).Select(m => (PropertyDeclarationSyntax)m)) {
                     serializeMethod = serializeMethod.AddBodyStatements(this.GetInvocationExpression(member.Identifier.Text));
                 }
-                foreach (var field in serializableClass.Members.Where(m => m is FieldDeclarationSyntax).Select(f => (FieldDeclarationSyntax)f)) {
+                foreach (var field in serializableClass.Members.OfType<FieldDeclarationSyntax>()) {
                     serializeMethod = serializeMethod.AddBodyStatements(this.GetInvocationExpression(field.Declaration.Variables.First().Identifier.Text));
                 }
                 newClass = serializableClass.AddMembers(serializeMethod);
             }
             if (!serializableClass.Members.Where(m => m is MethodDeclarationSyntax).Any(m => ((MethodDeclarationSyntax)m).Identifier.Text == "Deserialize")) {
-                var semanticModel = await document.GetSemanticModelAsync();
                 var deserializeMethod = GetMethodDeclarationSyntax(returnTypeName: "void",
                                                                 methodName: "Deserialize",
                                                                 parameterTypes: new[] { "DeserializeEvent" },
-                                                                paramterNames: new[] { "e" });
+                                                                paramterNames: new[] { "e" },
+                                                                hasOverride: semanticModel.GetDeclaredSymbol(serializableClass).BaseType?.GetMembers().Any(
+                                                                    m => m.Kind == SymbolKind.Method && m.Name == "Deserialize") ?? false);
                 foreach (var member in serializableClass.Members) {
                     if (member is FieldDeclarationSyntax field) {
                         var readMethod = this.GetReadMethod(field.Declaration.Type, semanticModel);
                         deserializeMethod = deserializeMethod.AddBodyStatements(this.GetReadExpression(field.Declaration.Variables.First().Identifier.Text, readMethod));
-                    } else if (member is PropertyDeclarationSyntax property) {
+                    } else if (member is PropertyDeclarationSyntax property && (property.AccessorList?.Accessors.Any(x => x.IsKind(SyntaxKind.GetAccessorDeclaration)) ?? false) && (property.AccessorList?.Accessors.Any(x => x.IsKind(SyntaxKind.SetAccessorDeclaration)) ?? false)) {
                         var readMethod = this.GetReadMethod(property.Type, semanticModel);
                         deserializeMethod = deserializeMethod.AddBodyStatements(this.GetReadExpression(property.Identifier.Text, readMethod));
                     }

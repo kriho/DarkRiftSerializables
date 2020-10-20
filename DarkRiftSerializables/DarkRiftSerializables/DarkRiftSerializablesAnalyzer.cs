@@ -32,7 +32,7 @@ namespace DarkRiftSerializables {
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context) {
             var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
-            if (namedTypeSymbol.Interfaces.Any(i => i.Name == "IDarkRiftSerializable")) {
+            if (namedTypeSymbol.AllInterfaces.Any(i => i.Name == "IDarkRiftSerializable")) {
                 if (!namedTypeSymbol.MemberNames.Contains("Deserialize") || !namedTypeSymbol.MemberNames.Contains("Serialize")) {
                     var diagnostic = Diagnostic.Create(Rule, namedTypeSymbol.Locations[0], namedTypeSymbol.Name);
                     context.ReportDiagnostic(diagnostic);
