@@ -30,9 +30,13 @@ namespace DarkRiftSerializables {
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context) {
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            var diagnostic = context.Diagnostics.First();
+            var diagnostic = context.Diagnostics.FirstOrDefault();
+            if (diagnostic == null)
+                return;
             var diagnosticSpan = diagnostic.Location.SourceSpan;
-            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<ClassDeclarationSyntax>().First();
+            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<ClassDeclarationSyntax>().FirstOrDefault();
+            if (declaration == null)
+                return;
             context.RegisterCodeFix(
                 CodeAction.Create(
                     title: title,
@@ -147,7 +151,11 @@ namespace DarkRiftSerializables {
                 }
                 type = identifierType.Identifier.Text;
             } else if (typeSyntax is ArrayTypeSyntax arrayType) {
-                return this.GetReadMethod(arrayType.ElementType, semanticModel) + "s";
+                string typeMethod = this.GetReadMethod(arrayType.ElementType, semanticModel);
+                if (typeMethod.Contains("<"))
+                    return typeMethod.Insert(typeMethod.IndexOf('<'), "s");
+                else
+                    return typeMethod + "s";
             }
             switch (type) {
                 case "bool":
