@@ -34,8 +34,10 @@ namespace DarkRiftSerializables {
             if (diagnostic == null)
                 return;
             var diagnosticSpan = diagnostic.Location.SourceSpan;
-            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<ClassDeclarationSyntax>().FirstOrDefault();
+            var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<TypeDeclarationSyntax>().FirstOrDefault();
             if (declaration == null)
+                return;
+            if (declaration is InterfaceDeclarationSyntax)
                 return;
             context.RegisterCodeFix(
                 CodeAction.Create(
@@ -227,33 +229,33 @@ namespace DarkRiftSerializables {
             }
         }
 
-        private async Task<Document> AutogenerateMethodsAsync(Document document, ClassDeclarationSyntax serializableClass, CancellationToken cancellationToken) {
+        private async Task<Document> AutogenerateMethodsAsync(Document document, TypeDeclarationSyntax serializableType, CancellationToken cancellationToken) {
             var root = await document.GetSyntaxRootAsync().ConfigureAwait(false);
             var semanticModel = await document.GetSemanticModelAsync();
-            ClassDeclarationSyntax newClass = null;
-            if (!serializableClass.Members.Where(m => m is MethodDeclarationSyntax).Any(m => ((MethodDeclarationSyntax)m).Identifier.Text == "Serialize")) {
+            TypeDeclarationSyntax newType = null;
+            if (!serializableType.Members.Where(m => m is MethodDeclarationSyntax).Any(m => ((MethodDeclarationSyntax)m).Identifier.Text == "Serialize")) {
                 var serializeMethod = GetMethodDeclarationSyntax(returnTypeName: "void",
                                                                 methodName: "Serialize",
                                                                 parameterTypes: new[] { "SerializeEvent" },
                                                                 paramterNames: new[] { "e" },
-                                                                hasOverride: semanticModel.GetDeclaredSymbol(serializableClass).BaseType?.GetMembers().Any(
+                                                                hasOverride: semanticModel.GetDeclaredSymbol(serializableType).BaseType?.GetMembers().Any(
                                                                     m => m.Kind == SymbolKind.Method && m.Name == "Serialize") ?? false);
-                foreach (var member in serializableClass.Members.Where(m => m is PropertyDeclarationSyntax prop && (prop.AccessorList?.Accessors.Any(x => x.IsKind(SyntaxKind.GetAccessorDeclaration)) ?? false) && (prop.AccessorList?.Accessors.Any(x => x.IsKind(SyntaxKind.SetAccessorDeclaration)) ?? false)).Select(m => (PropertyDeclarationSyntax)m)) {
+                foreach (var member in serializableType.Members.Where(m => m is PropertyDeclarationSyntax prop && (prop.AccessorList?.Accessors.Any(x => x.IsKind(SyntaxKind.GetAccessorDeclaration)) ?? false) && (prop.AccessorList?.Accessors.Any(x => x.IsKind(SyntaxKind.SetAccessorDeclaration)) ?? false)).Select(m => (PropertyDeclarationSyntax)m)) {
                     serializeMethod = serializeMethod.AddBodyStatements(this.GetInvocationExpression(member.Identifier.Text));
                 }
-                foreach (var field in serializableClass.Members.OfType<FieldDeclarationSyntax>()) {
+                foreach (var field in serializableType.Members.OfType<FieldDeclarationSyntax>()) {
                     serializeMethod = serializeMethod.AddBodyStatements(this.GetInvocationExpression(field.Declaration.Variables.First().Identifier.Text));
                 }
-                newClass = serializableClass.AddMembers(serializeMethod);
+                newType = serializableType.AddMembers(serializeMethod);
             }
-            if (!serializableClass.Members.Where(m => m is MethodDeclarationSyntax).Any(m => ((MethodDeclarationSyntax)m).Identifier.Text == "Deserialize")) {
+            if (!serializableType.Members.Where(m => m is MethodDeclarationSyntax).Any(m => ((MethodDeclarationSyntax)m).Identifier.Text == "Deserialize")) {
                 var deserializeMethod = GetMethodDeclarationSyntax(returnTypeName: "void",
                                                                 methodName: "Deserialize",
                                                                 parameterTypes: new[] { "DeserializeEvent" },
                                                                 paramterNames: new[] { "e" },
-                                                                hasOverride: semanticModel.GetDeclaredSymbol(serializableClass).BaseType?.GetMembers().Any(
+                                                                hasOverride: semanticModel.GetDeclaredSymbol(serializableType).BaseType?.GetMembers().Any(
                                                                     m => m.Kind == SymbolKind.Method && m.Name == "Deserialize") ?? false);
-                foreach (var member in serializableClass.Members) {
+                foreach (var member in serializableType.Members) {
                     if (member is FieldDeclarationSyntax field) {
                         var readMethod = this.GetReadMethod(field.Declaration.Type, semanticModel);
                         deserializeMethod = deserializeMethod.AddBodyStatements(this.GetReadExpression(field.Declaration.Variables.First().Identifier.Text, readMethod));
@@ -262,14 +264,14 @@ namespace DarkRiftSerializables {
                         deserializeMethod = deserializeMethod.AddBodyStatements(this.GetReadExpression(property.Identifier.Text, readMethod));
                     }
                 }
-                if (newClass != null) {
-                    newClass = newClass.AddMembers(deserializeMethod);
+                if (newType != null) {
+                    newType = newType.AddMembers(deserializeMethod);
                 } else {
-                    newClass = serializableClass.AddMembers(deserializeMethod);
+                    newType = serializableType.AddMembers(deserializeMethod);
                 }
             }
-            if (newClass != null) {
-                root = root.ReplaceNode(serializableClass, newClass);
+            if (newType != null) {
+                root = root.ReplaceNode(serializableType, newType);
                 root = Formatter.Format(root, Formatter.Annotation, document.Project.Solution.Workspace);
             }
             return document.WithSyntaxRoot(root);
